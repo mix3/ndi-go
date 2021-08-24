@@ -64,6 +64,35 @@ type SourceT struct {
 	ref *C.NDIlib_source_t
 }
 
+func NewSourceT() SourceT {
+	v := SourceT{}
+	return v
+}
+
+type NewSourceTOption func(*SourceT)
+
+func NewSourceTOptionName(v *string) NewSourceTOption {
+	return func(t *SourceT) {
+		if v != nil {
+			t.ref.p_ndi_name = C.CString(*v)
+		} else {
+			t.ref.p_ndi_name = nil
+		}
+	}
+}
+
+func NewSourceTOptionURLAddress(v *string) NewSourceTOption {
+	return func(t *SourceT) {
+		y := unsafe.Pointer(&t.ref.anon0)
+		_ = y
+		if v != nil {
+			//t.ref.anon0 = C.CString(*v)
+		} else {
+			//t.ref.anon0 = nil
+		}
+	}
+}
+
 func (t SourceT) Name() string {
 	return C.GoString(t.ref.p_ndi_name)
 }
