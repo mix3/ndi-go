@@ -6,7 +6,6 @@ package ndi
 */
 import "C"
 import (
-	"log"
 	"unsafe"
 )
 
@@ -71,18 +70,18 @@ func (t SourceT) Name() string {
 	return C.GoString(t.ref.p_ndi_name)
 }
 
-func FindGetCurrentSources(instance FindInstanceT) []*SourceT {
+const sizeOfSourceTValue = unsafe.Sizeof([1]C.NDIlib_source_t{})
+
+func FindGetCurrentSources(instance FindInstanceT) []SourceT {
 	var pNoSources C.uint32_t
 	ret := C.NDIlib_find_get_current_sources(C.NDIlib_find_instance_t(instance), &pNoSources)
 	if pNoSources == 0 {
 		return nil
 	}
-	slices := (*[1 << 28]*C.NDIlib_source_t)(unsafe.Pointer(ret))[:pNoSources:pNoSources]
-	result := make([]*SourceT, pNoSources)
-	for i, v := range slices {
-		vv := *v
-		log.Println(C.GoString(vv.p_ndi_name))
-		result[i] = &SourceT{ref: v}
+	result := make([]SourceT, pNoSources)
+	for i := 0; i < int(pNoSources); i++ {
+		v := (*C.NDIlib_source_t)(unsafe.Pointer(uintptr(unsafe.Pointer(ret)) + sizeOfSourceTValue*uintptr(i)))
+		result[i] = SourceT{ref: v}
 	}
 	return result
 }
