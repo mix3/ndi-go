@@ -60,30 +60,16 @@ func FindDestroy(t FindInstanceT) {
 	C.NDIlib_find_destroy(C.NDIlib_find_instance_t(t))
 }
 
-type SourceT struct {
-	ref *C.NDIlib_source_t
-}
-
-func (t SourceT) Name() string {
-	return C.GoString(t.ref.p_ndi_name)
-}
-
-func (t SourceT) URLAddress() string {
-	return C.GoString(*(**C.char)(unsafe.Pointer(&t.ref.anon0)))
-}
-
-const sizeOfSourceTValue = unsafe.Sizeof([1]C.NDIlib_source_t{})
-
-func FindGetCurrentSources(instance FindInstanceT) []SourceT {
+func FindGetCurrentSources(instance FindInstanceT) []*SourceT {
 	var pNoSources C.uint32_t
-	ret := C.NDIlib_find_get_current_sources(C.NDIlib_find_instance_t(instance), &pNoSources)
+	pSources := C.NDIlib_find_get_current_sources(C.NDIlib_find_instance_t(instance), &pNoSources)
 	if pNoSources == 0 {
 		return nil
 	}
-	result := make([]SourceT, pNoSources)
-	for i := 0; i < int(pNoSources); i++ {
-		v := (*C.NDIlib_source_t)(unsafe.Pointer(uintptr(unsafe.Pointer(ret)) + sizeOfSourceTValue*uintptr(i)))
-		result[i] = SourceT{ref: v}
+	sources := (*[1 << 28]C.NDIlib_source_t)(unsafe.Pointer(pSources))[:pNoSources:pNoSources]
+	result := make([]*SourceT, pNoSources)
+	for i, source := range sources {
+		result[i] = (*SourceT)(&source)
 	}
 	return result
 }
