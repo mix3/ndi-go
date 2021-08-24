@@ -60,14 +60,16 @@ func FindDestroy(t FindInstanceT) {
 	C.NDIlib_find_destroy(C.NDIlib_find_instance_t(t))
 }
 
-//E>const NDIlib_source_t* NDIlib_find_get_current_sources(NDIlib_find_instance_t p_instance, uint32_t* p_no_sources);
-
 type SourceT struct {
 	ref *C.NDIlib_source_t
 }
 
 func (t SourceT) Name() string {
 	return C.GoString(t.ref.p_ndi_name)
+}
+
+func (t SourceT) URLAddress() string {
+	return C.GoString(*(**C.char)(unsafe.Pointer(&t.ref.anon0)))
 }
 
 const sizeOfSourceTValue = unsafe.Sizeof([1]C.NDIlib_source_t{})
